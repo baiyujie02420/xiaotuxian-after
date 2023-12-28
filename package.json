@@ -1,0 +1,23 @@
+{
+  "name": "xiaotuxian-after",
+  "version": "1.0.0",
+  "description": "小兔鲜小程序商城后端项目",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "baiyujie",
+  "license": "ISC",
+  "dependencies": {
+    "@escook/express-joi": "^1.1.1",
+    "ali-oss": "^6.19.0",
+    "co": "^4.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-jwt": "^8.4.1",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "1.4.5-lts.1",
+    "mysql": "^2.18.1"
+  }
+}
