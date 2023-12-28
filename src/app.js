@@ -5,7 +5,7 @@ const hotRouter = require('./router/hot')
 const goodsSort = require('./router/goodsSort')
 const goodsDetail = require('./router/goodsDetail')
 const avatarRouter = require('./router/uploadAvatar')
-
+const addressRouter =require('./router/address')
 const app = express()
 const Joi = require('joi')
 const cors = require('cors')
@@ -23,6 +23,7 @@ app.use(hotRouter)
 app.use(goodsSort)
 app.use(goodsDetail)
 app.use(avatarRouter)
+app.use(addressRouter)
 
 // 配置全局错误 中间件
 app.use((err, req, res, next) => {
