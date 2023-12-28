@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const db = require('../db')
 const { expressjwt } = require('express-jwt') // 解析token,并挂载到req上
 const config = require('../config')
 const fs = require('fs')
@@ -40,29 +41,41 @@ router.post(
   expressjwt({ secret: config.jwtSecretKey, algorithms: ['HS256'] }),
   upload.single('file'),
   (req, res) => {
-    console.log(req.file)
-    let filePath = './' + req.file.path // 文件路径
+    // console.log(req.file)
+    let filePath = '.\\' + req.file.path // 文件路径
     let fileType = '.' + req.file.originalname.split('.')[1] //文件扩展名 例如:png jpg
-    let fileName = 'avatar' + fileType // 构建上传到阿里云的图片名
+    let fileName = Date.now() + fileType // 构建上传到阿里云的图片名
     // 阿里云 上传文件
-    co(function* () {
-      client.useBucket(bucket)
-      let result = yield client.put('/images/' + fileName, filePath)
-      let imageSrc = `http://${endPoint}/` + result.name
-      console.log(filePath)
-      res.send({
-        msg: 'success',
-        result: {
-          avatar: imageSrc,
-        },
-      })
-    }).catch(function (err) {
-      res.send({
-        msg: 'failed',
-        err,
-        avatar: null,
-      })
-    })
+    async function uploadImage() {
+      try {
+        client.useBucket(bucket)
+        let result = await client.put('/images/' + fileName, filePath)
+        let imageSrc = `http://${endPoint}/` + result.name
+        // 把图片url地址存到数据库
+        const sql = 'update user set avatar=? where id=?'
+        const values = [imageSrc, req.auth.id]
+        db.query(sql, values, (err, results) => {
+          if (err) return res.send({ status: 1, msg: err.message })
+          if (results.affectedRows !== 1)
+            return res.send({ status: 1, msg: '更新数据库失败' })
+          return res.send({
+            msg: 'success',
+            result: {
+              avatar: imageSrc,
+            },
+          })
+        })
+        fs.unlinkSync(filePath)
+      } catch (error) {
+        res.send({
+          msg: 'failed',
+          error,
+          avatar: null,
+        })
+        fs.unlinkSync(filePath)
+      }
+    }
+    uploadImage()
   }
 )
 module.exports = router
