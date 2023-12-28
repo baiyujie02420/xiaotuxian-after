@@ -80,8 +80,24 @@ router.post(
         })
       }
     })
-    // 修改一下数据库的default值
   }
 )
+// 删除收货地址
+router.delete('/member/address/:id', (req, res) => {
+  const deleteid = req.params.id // 获取请求中的 ID 参数
 
+  // 执行删除操作
+  const condition = `id=${deleteid}` // 删除的条件
+  const deleteQuery = `DELETE FROM address WHERE ${condition}`
+  db.query(deleteQuery, (error, results) => {
+    if (error) {
+      console.error('删除查询出错：', error)
+      return
+    }
+    res.send({
+      msg: '操作成功',
+      id: deleteid,
+    })
+  })
+})
 module.exports = router
