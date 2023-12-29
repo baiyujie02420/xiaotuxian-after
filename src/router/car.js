@@ -29,14 +29,14 @@ router.get('/member/cart', expressjwt({ secret: config.jwtSecretKey, algorithms:
 // 加入商品到购物车(模拟数据)
 router.post('/member/cart', expressjwt({ secret: config.jwtSecretKey, algorithms: ['HS256'] }), (req, res) => {
   const sql = 'insert into goodsDetail set ?'
-  const mockskuid = Mock.Random.integer()
+  const mockskuid = Mock.Random.integer(1)
   const values = {
     name: Mock.Random.cword(5, 8),
-    picture: 'https://yanxuan-item.nosdn.127.net/aff51f590178c31d5beaf44cbdf795d1.png',
+    picture: 'https://yanxuan-item.nosdn.127.net/084f82c43a71bbc4d280fbb09a47a028.jpg',
     price: Mock.Random.float(0, 100, 2, 2),
     count: 1,
     skuid: mockskuid,
-    attrsText: '颜色:瓷白色 尺寸：8寸',
+    attrsText: '颜色:黄色 尺寸：M码',
     selected: 1,
     nowPrice: Mock.Random.float(0, 100, 2, 2),
     stock: 1100,
