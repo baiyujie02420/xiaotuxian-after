@@ -83,21 +83,85 @@ router.post(
   }
 )
 // 删除收货地址
-router.delete('/member/address/:id', (req, res) => {
-  const deleteid = req.params.id // 获取请求中的 ID 参数
+router.delete(
+  '/member/address/:id',
+  expressjwt({ secret: config.jwtSecretKey, algorithms: ['HS256'] }),
+  (req, res) => {
+    const deleteid = req.params.id // 获取请求中的 ID 参数
 
-  // 执行删除操作
-  const condition = `id=${deleteid}` // 删除的条件
-  const deleteQuery = `DELETE FROM address WHERE ${condition}`
-  db.query(deleteQuery, (error, results) => {
-    if (error) {
-      console.error('删除查询出错：', error)
-      return
-    }
-    res.send({
-      msg: '操作成功',
-      id: deleteid,
+    // 执行删除操作
+    const condition = `id=${deleteid}` // 删除的条件
+    const deleteQuery = `DELETE FROM address WHERE ${condition}`
+    db.query(deleteQuery, (error, results) => {
+      if (error) {
+        console.error('删除查询出错：', error)
+        return
+      }
+      res.send({
+        msg: '操作成功',
+        id: deleteid,
+      })
     })
-  })
-})
+  }
+)
+// 获取收货地址详情
+router.get(
+  '/member/address/:id',
+  expressjwt({ secret: config.jwtSecretKey, algorithms: ['HS256'] }),
+  (req, res) => {
+    const id = req.params.id // 获取请求中的 ID 参数
+    const sql = 'select * from address where id=?'
+    db.query(sql, id, (err, results) => {
+      if (err) {
+        return res.send({ status: 1, msg: err.message })
+      }
+      if (results.length === 0) {
+        return console.log('未找到该地址详情')
+      }
+      res.send({
+        msg: '操作成功',
+        result: results[0],
+      })
+    })
+  }
+)
+// 修改收货地址
+router.put(
+  '/member/address/:id',
+  expressjwt({ secret: config.jwtSecretKey, algorithms: ['HS256'] }),
+  (req, res) => {
+    const id = req.params.id
+    const body = req.body
+    // 处理一下isDefault的值
+    if (body.isDefault === 1) {
+      const sql = 'update address set isDefault=0'
+      db.query(sql, (err, results) => {
+        if (err) {
+          console.error('更新数据失败：', err)
+          return
+        }
+        const updateQuery = 'update address set ? where id=?'
+        const values = {
+          receiver: body.receiver,
+          contact: body.contact,
+          fullLocation: body.fullLocation,
+          address: body.address,
+          isDefault: body.isDefault,
+        }
+        db.query(updateQuery, [values, id], (err, results) => {
+          if (err) {
+            console.error('更新数据失败：', err)
+            return
+          }
+          res.send({
+            msg: '操作成功',
+            result: {
+              id,
+            },
+          })
+        })
+      })
+    }
+  }
+)
 module.exports = router
