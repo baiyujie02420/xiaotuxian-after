@@ -13,9 +13,16 @@ router.get('/member/cart', expressjwt({ secret: config.jwtSecretKey, algorithms:
     if (err) {
       return console.log('获取数据失败')
     }
+    const re = results.map((item) => {
+      return {
+        ...item,
+        selected: item.selected === 1 ? true : false,
+      }
+    })
+    console.log(re)
     res.send({
       msg: '操作成功',
-      result: results,
+      result: re,
     })
   })
 })
@@ -57,6 +64,46 @@ router.delete('/member/cart', expressjwt({ secret: config.jwtSecretKey, algorith
     }
     res.send({
       msg: '删除成功',
+    })
+  })
+})
+// 修改购物车单品
+router.put('/member/cart/:skuid', expressjwt({ secret: config.jwtSecretKey, algorithms: ['HS256'] }), (req, res) => {
+  const skuid = req.params.skuid
+  const body = req.body
+  const sql = `update goodsDetail set ? where skuid=${skuid}`
+  if (body.selected === 0) {
+    db.query(sql, { count: body.count, selected: body.selected }, (err, results) => {
+      if (err) return console.log('修改购物车单品失败', err)
+      // console.log(results)
+    })
+  } else {
+    db.query(sql, { count: body.count, selected: 1 }, (err, results) => {
+      if (err) return console.log('修改购物车单品失败', err)
+      // console.log(results)
+      const querySql = `select * from goodsDetail where skuid=${skuid}`
+      db.query(querySql, (err, results) => {
+        // console.log(results[0])
+        res.send({
+          msg: '操作成功',
+          result: results[0],
+        })
+      })
+    })
+  }
+})
+// 购物车全选反选
+router.post('/member/cart/selected', expressjwt({ secret: config.jwtSecretKey, algorithms: ['HS256'] }), (req, res) => {
+  const selected = req.body.selected
+  console.log(selected, 999)
+  const sql = `update goodsDetail set selected=${selected}`
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('更新数据失败：', err)
+      return
+    }
+    res.send({
+      msg: '操作成功',
     })
   })
 })
