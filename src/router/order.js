@@ -33,7 +33,6 @@ router.get('/member/order/pre', (req, res) => {
       })
 
       for (let i = 0; i < results.length; i++) {
-        console.log(results[i].count)
         goodsCount = goodsCount + results[i].count
         totalPrice = totalPrice + results[i].count * results[i].price
       }
@@ -55,5 +54,31 @@ router.get('/member/order/pre', (req, res) => {
     })
   })
 })
+// 提交订单
+router.post('/member/order', (req, res) => {
+  // 把订单信息写到数据库里面
+  const { addressId, buyerMessage, deliveryTimeType, payChannel, payType, goods } = req.body
 
+  const insertsql = 'insert into `order` set ?'
+  db.query(insertsql, { addressId, buyerMessage, deliveryTimeType, payChannel, payType }, (err, results) => {
+    if (err) return console.log('写入数据到order失败', err)
+    if (results.affectedRows !== 1) return console.log(console.log('写入数据到order失败'))
+    goods.forEach((item) => {
+      db.query(
+        'insert into order_goods set ?',
+        { pid: results.insertId, count: item.count, skuId: item.skuId },
+        (err, results) => {
+          if (err) return console.log('写入数据到order_goods失败', err)
+          if (results.affectedRows !== 1) return console.log(console.log('写入数据到order_goods失败'))
+        }
+      )
+    })
+    res.send({
+      msg: '操作成功',
+      result: {
+        id: results.insertId, //订单id
+      },
+    })
+  })
+})
 module.exports = router
